@@ -1,49 +1,35 @@
 # predict_hashtags.py
 
-import sys
+import pandas as pd
 import joblib
 
-def load_model(model_path):
-    try:
-        model = joblib.load(model_path)
-        return model
-    except Exception as e:
-        print("Error loading the model:", e)
-        return None
 
-def predict_hashtags(model, latitude, longitude):
-    try:
-        # Preprocess latitude and longitude if necessary
-        # Example: You may need to convert latitude and longitude to floats
-        latitude = float(latitude)
-        longitude = float(longitude)
-
-        # Make predictions using the loaded model
-        hashtags = model.predict([[latitude, longitude]])
-        return hashtags
-    except Exception as e:
-        print("Error predicting hashtags:", e)
-        return None
-
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python predict_hashtags.py <latitude> <longitude>")
-        sys.exit(1)
-
-    latitude = sys.argv[1]
-    longitude = sys.argv[2]
-
+def main(latitude, longitude):
     # Load the trained model
-    model_path = '/home/airbornharsh/Programming/internship/freelancer/social-media-hashtag-username/model_training/saved_models/train_location_model.pkl'  # Update with the actual path to your trained model
-    model = load_model(model_path)
+    model = joblib.load(
+        "/home/airbornharsh/Programming/internship/freelancer/social-media-hashtag-username/model_training/saved_models/train_location_model.pkl"
+    )
 
-    if model is None:
-        print("Failed to load the model.")
-        sys.exit(1)
+    # Transform latitude and longitude into a single string
+    input_data = pd.DataFrame({"latitude": [latitude], "longitude": [longitude]})
+    input_concat = input_data.apply(lambda x: " ".join(map(str, x)), axis=1)
+
+    # Load the vectorizer used during training
+    vectorizer = joblib.load(
+        "/home/airbornharsh/Programming/internship/freelancer/social-media-hashtag-username/model_training/saved_models/train_location_model_vectorizer.pkl"
+    )
+
+    # Transform the input data using the same vectorizer
+    input_vec = vectorizer.transform(input_concat)
 
     # Make predictions
-    hashtags = predict_hashtags(model, latitude, longitude)
+    hashtags = model.predict(input_vec)
+    return hashtags
 
-    if hashtags is not None:
-        print("\nPredicted Hashtags:")
-        print(hashtags)
+
+if __name__ == "__main__":
+    # Example usage
+    latitude = 40.7128
+    longitude = -74.0060
+    predicted_hashtags = main(latitude, longitude)
+    print(predicted_hashtags)

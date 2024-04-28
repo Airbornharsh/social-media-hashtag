@@ -3,7 +3,7 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import { Options, PythonShell } from "python-shell";
-import { execSync } from "child_process";
+import axios from "axios";
 
 const app = express();
 const PORT = 3000;
@@ -42,6 +42,14 @@ app.post("/predict", async (req: Request, res: Response) => {
     );
     console.log(data);
     res.json({ hashtags: data });
+  } catch (e: any) {
+    console.log(e);
+    res.json({ error: e.message });
+  }
+});
+
+app.get("/hashtag", async (req: Request, res: Response) => {
+  try {
   } catch (e: any) {
     console.log(e);
     res.json({ error: e.message });
